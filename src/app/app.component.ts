@@ -9,20 +9,37 @@ import { HttpClient } from '@angular/common/http';
 export class AppComponent implements OnInit {
   loadedPosts = [];
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.fetchPost();
+  }
 
   onCreatePost(postData: { title: string; content: string }) {
     // Send Http request
-    console.log(postData);
+    this.http
+    .post('https://ng-http-udemy-da74d-default-rtdb.firebaseio.com/posts.json', postData)
+    .subscribe(
+      (res => {
+        console.log(res);
+    }));
   }
 
   onFetchPosts() {
     // Send Http request
+    this.fetchPost();
   }
 
   onClearPosts() {
     // Send Http request
+  }
+
+  private fetchPost() {
+    this.http
+    .get('https://ng-http-udemy-da74d-default-rtdb.firebaseio.com/posts.json')
+    .subscribe(
+      (posts => {
+        console.log(posts);
+    }));
   }
 }
