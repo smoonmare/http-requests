@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { map } from 'rxjs/operators';
+import { Post } from './post';
 
 @Component({
   selector: 'app-root',
@@ -15,10 +17,10 @@ export class AppComponent implements OnInit {
     this.fetchPost();
   }
 
-  onCreatePost(postData: { title: string; content: string }) {
+  onCreatePost(postData: Post) {
     // Send Http request
     this.http
-    .post('https://ng-http-udemy-da74d-default-rtdb.firebaseio.com/posts.json', postData)
+    .post< {name: string} >('https://ng-http-udemy-da74d-default-rtdb.firebaseio.com/posts.json', postData)
     .subscribe(
       (res => {
         console.log(res);
@@ -36,10 +38,20 @@ export class AppComponent implements OnInit {
 
   private fetchPost() {
     this.http
-    .get('https://ng-http-udemy-da74d-default-rtdb.firebaseio.com/posts.json')
-    .subscribe(
-      (posts => {
+    .get<{ [key: string]: Post }>('https://ng-http-udemy-da74d-default-rtdb.firebaseio.com/posts.json')
+    .pipe(
+      map(res => {
+        const postsArray: Post[] = [];
+        for (const key in res) {
+          if(res.hasOwnProperty(key)) {
+            postsArray.push({ ...res[key], id: key});
+          }
+        }
+        return postsArray;
+      })
+    )
+    .subscribe(posts => {
         console.log(posts);
-    }));
+    });
   }
 }
