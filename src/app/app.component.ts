@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { map } from 'rxjs/operators';
+import { PostsService } from './posts.service';
+// import { HttpClient } from '@angular/common/http';
 import { Post } from './post';
 
 @Component({
@@ -12,50 +12,34 @@ export class AppComponent implements OnInit {
   loadedPosts: Post[] = [];
   isFetching = false;
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    // private http: HttpClient,
+    private postsService: PostsService
+  ) { }
 
   ngOnInit() {
-    this.fetchPost();
+    this.isFetching = true;
+    this.postsService.fetchPosts().subscribe(posts => {
+      this.loadedPosts = posts;
+      this.isFetching = false;
+    });
   }
 
   onCreatePost(postData: Post) {
     // Send Http request
-    this.http
-    .post< {name: string} >('https://ng-http-udemy-da74d-default-rtdb.firebaseio.com/posts.json', postData)
-    .subscribe(
-      (res => {
-        console.log(res);
-    }));
+    this.postsService.createAndStorePosts(postData.title, postData.content);
   }
 
   onFetchPosts() {
     // Send Http request
-    this.fetchPost();
+    this.isFetching = true;
+    this.postsService.fetchPosts().subscribe(posts => {
+      this.loadedPosts = posts;
+      this.isFetching = false;
+    });
   }
 
   onClearPosts() {
     // Send Http request
-  }
-
-  private fetchPost() {
-    this.isFetching = true;
-    this.http
-    .get<{ [key: string]: Post }>('https://ng-http-udemy-da74d-default-rtdb.firebaseio.com/posts.json')
-    .pipe(
-      map(res => {
-        const postsArray: Post[] = [];
-        for (const key in res) {
-          if(res.hasOwnProperty(key)) {
-            postsArray.push({ ...res[key], id: key});
-          }
-        }
-        return postsArray;
-      })
-    )
-    .subscribe(posts => {
-        console.log(posts);
-        this.loadedPosts = posts;
-        this.isFetching = false;
-    });
   }
 }
