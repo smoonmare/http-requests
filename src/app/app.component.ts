@@ -1,14 +1,16 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { PostsService } from './posts.service';
 // import { HttpClient } from '@angular/common/http';
 import { Post } from './post';
+import { Subscription } from 'rxjs/internal/Subscription';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
+  private subscriptions: Subscription[] = [];
   loadedPosts: Post[] = [];
   isFetching = false;
 
@@ -17,12 +19,22 @@ export class AppComponent implements OnInit {
     private postsService: PostsService
   ) { }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.isFetching = true;
-    this.postsService.fetchPosts().subscribe(posts => {
-      this.loadedPosts = posts;
-      this.isFetching = false;
-    });
+    this.subscriptions.push(
+      this.postsService.fetchPosts().subscribe(posts => {
+        this.isFetching = false;
+      })
+    );
+    this.subscriptions.push(
+      this.postsService.getPostsUpdateListener().subscribe(posts => {
+        this.loadedPosts = posts;
+      })
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
   onCreatePost(postData: Post) {
@@ -33,13 +45,18 @@ export class AppComponent implements OnInit {
   onFetchPosts() {
     // Send Http request
     this.isFetching = true;
-    this.postsService.fetchPosts().subscribe(posts => {
-      this.loadedPosts = posts;
-      this.isFetching = false;
-    });
+    this.subscriptions.push(
+      this.postsService.fetchPosts().subscribe(posts => {
+        this.isFetching = false;
+      })
+    )
   }
 
   onClearPosts() {
     // Send Http request
+    this.subscriptions.push(this.postsService.deletePosts().subscribe(() => {
+      this.loadedPosts = [];
+    })
+    );
   }
 }
