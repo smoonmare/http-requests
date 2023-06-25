@@ -10,6 +10,7 @@ import { Post } from './post';
 export class PostsService {
   private postsUpdated = new Subject<Post[]>();
   private posts: Post[] = [];
+  error = new Subject<string>();
 
   constructor(private http: HttpClient) { }
 
@@ -20,9 +21,14 @@ export class PostsService {
         'https://ng-http-udemy-da74d-default-rtdb.firebaseio.com/posts.json',
         postData
       )
-      .subscribe(response => {
-        this.posts.push(postData);
-        this.postsUpdated.next([...this.posts]);
+      .subscribe({
+        next: (res) => {
+          this.posts.push(postData);
+          this.postsUpdated.next([...this.posts]);
+        },
+        error: (error) => {
+          this.error.next(error.statusText + error.status);
+        }
       });
   }
 

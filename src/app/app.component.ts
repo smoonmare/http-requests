@@ -23,11 +23,17 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.isFetching = true;
     this.subscriptions.push(
-      this.postsService.fetchPosts().subscribe(posts => {
-        this.isFetching = false;
-      }, error => {
-        this.error = `${error.statusText} - status:${error.status}`;
-      })
+      this.postsService.fetchPosts().subscribe({
+        next: (posts) => {
+          this.isFetching = false;
+        },
+        error: (error) => {
+          this.error = `${error.statusText} - status:${error.status}`;
+        }
+      }),
+      this.postsService.error.subscribe(error => {
+        this.error = error;
+      })      
     );
     this.subscriptions.push(
       this.postsService.getPostsUpdateListener().subscribe(posts => {
@@ -49,12 +55,15 @@ export class AppComponent implements OnInit, OnDestroy {
     // Send Http request
     this.isFetching = true;
     this.subscriptions.push(
-      this.postsService.fetchPosts().subscribe(posts => {
-        this.isFetching = false;
-      }, error => {
-        this.error = `${error.statusText} - status:${error.status}`;
+      this.postsService.fetchPosts().subscribe({
+        next: (posts) => {
+          this.isFetching = false;
+        },
+        error: (error) => {
+          this.error = `${error.statusText} - status:${error.status}`;
+        }
       })
-    )
+    );
   }
 
   onClearPosts() {
