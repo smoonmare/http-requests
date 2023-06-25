@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Subject } from 'rxjs/internal/Subject';
 import { throwError } from 'rxjs';
 import { map, tap, catchError } from 'rxjs/operators';
@@ -21,9 +21,12 @@ export class PostsService {
       .post<{ name: string }>(
         'https://ng-http-udemy-da74d-default-rtdb.firebaseio.com/posts.json',
         postData,
-        { headers: new HttpHeaders({
-          'Custom-header': 'hello world!'
-        })}
+        { headers: new HttpHeaders(
+          {
+            'Custom-header': 'hello world!'
+          }),
+          params: new HttpParams().set('print', 'pretty')
+        }
       )
       .subscribe({
         next: (res) => {
@@ -40,9 +43,12 @@ export class PostsService {
     return this.http
     .get<{ [key: string]: Post }>(
       'https://ng-http-udemy-da74d-default-rtdb.firebaseio.com/posts.json',
-      { headers: new HttpHeaders({
-        'Custom-header': 'hello underworld!'
-      })}
+      { headers: new HttpHeaders(
+        {
+          'Custom-header': 'hello world!'
+        }),
+        params: new HttpParams().set('print', 'pretty')
+      }
     )
     .pipe(
       map(response => {
