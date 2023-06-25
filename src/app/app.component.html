@@ -68,6 +68,10 @@
       *ngIf="error">
         <h3>An Error occured!</h3>
         <p>{{ error }}</p>
+        <button
+          class="btn btn-danger"
+          (click)="onHandleError()">Try again
+        </button>
       </div>
     </div>
   </div>

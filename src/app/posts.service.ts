@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Subject } from 'rxjs/internal/Subject';
-import { map, tap } from 'rxjs/operators';
+import { throwError } from 'rxjs';
+import { map, tap, catchError } from 'rxjs/operators';
 import { Post } from './post';
 
 @Injectable({
@@ -48,6 +49,10 @@ export class PostsService {
       tap(posts => {
         this.posts = posts;
         this.postsUpdated.next([...this.posts]);
+      }),
+      catchError(error => {
+        // Send to analytics server or any other backend work
+        return throwError(error);
       })
     );
   }
