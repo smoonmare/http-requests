@@ -59,9 +59,15 @@
         </li>
       </ul>
       <div
-        *ngIf="isFetching"
+        *ngIf="isFetching && !error"
         class="spinner-border text-primary"
         role="status">
+      </div>
+      <div
+      class="alert alert-danger"
+      *ngIf="error">
+        <h3>An Error occured!</h3>
+        <p>{{ error }}</p>
       </div>
     </div>
   </div>

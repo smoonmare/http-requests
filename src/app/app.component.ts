@@ -13,6 +13,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
   loadedPosts: Post[] = [];
   isFetching = false;
+  error = null;
 
   constructor(
     // private http: HttpClient,
@@ -24,6 +25,8 @@ export class AppComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.postsService.fetchPosts().subscribe(posts => {
         this.isFetching = false;
+      }, error => {
+        this.error = `${error.statusText} - status:${error.status}`;
       })
     );
     this.subscriptions.push(
@@ -48,6 +51,8 @@ export class AppComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.postsService.fetchPosts().subscribe(posts => {
         this.isFetching = false;
+      }, error => {
+        this.error = `${error.statusText} - status:${error.status}`;
       })
     )
   }
