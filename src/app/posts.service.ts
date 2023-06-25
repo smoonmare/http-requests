@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpEventType, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Subject } from 'rxjs/internal/Subject';
 import { throwError } from 'rxjs';
 import { map, tap, catchError } from 'rxjs/operators';
@@ -21,17 +21,20 @@ export class PostsService {
       .post<{ name: string }>(
         'https://ng-http-udemy-da74d-default-rtdb.firebaseio.com/posts.json',
         postData,
-        { headers: new HttpHeaders(
-          {
-            'Custom-header': 'hello world!'
-          }),
-          params: new HttpParams().set('print', 'pretty')
+        { 
+          // headers: new HttpHeaders(
+          // {
+          //   'Custom-header': 'hello world!'
+          // }),
+          // params: new HttpParams().set('print', 'pretty')
+          observe: 'response'
         }
       )
       .subscribe({
         next: (res) => {
           this.posts.push(postData);
           this.postsUpdated.next([...this.posts]);
+          console.log(res);
         },
         error: (error) => {
           this.error.next(error.statusText + error.status);
@@ -43,21 +46,25 @@ export class PostsService {
     return this.http
     .get<{ [key: string]: Post }>(
       'https://ng-http-udemy-da74d-default-rtdb.firebaseio.com/posts.json',
-      { headers: new HttpHeaders(
-        {
-          'Custom-header': 'hello world!'
-        }),
-        params: new HttpParams().set('print', 'pretty')
+      { 
+        observe: 'response'
+        // headers: new HttpHeaders(
+        // {
+        //   'Custom-header': 'hello world!'
+        // }),
+        // params: new HttpParams().set('print', 'pretty')
       }
     )
     .pipe(
-      map(response => {
+      map(res => {
+        const resBody = res.body;
         const postsArray: Post[] = [];
-        for (const key in response) {
-          if (response.hasOwnProperty(key)) {
-            postsArray.push({ ...response[key], id: key });
+        for (const key in resBody) {
+          if (resBody.hasOwnProperty(key)) {
+            postsArray.push({ ...resBody[key], id: key });
           }
         }
+        console.log(res);
         return postsArray;
       }),
       tap(posts => {
@@ -66,7 +73,7 @@ export class PostsService {
       }),
       catchError(error => {
         // Send to analytics server or any other backend work
-        return throwError(error);
+        return throwError(() => error);
       })
     );
   }
@@ -76,6 +83,17 @@ export class PostsService {
   }
 
   deletePosts() {
-    return this.http.delete('https://ng-http-udemy-da74d-default-rtdb.firebaseio.com/posts.json');
+    return this.http.delete(
+      'https://ng-http-udemy-da74d-default-rtdb.firebaseio.com/posts.json',
+      {
+        observe: 'events'
+      }
+    ).pipe(tap(event => {
+      if (event.type === HttpEventType.Response) {
+        console.log(`event body: ${event.body}`);
+      } else if (event.type === HttpEventType.Sent) {
+        console.log(`event type: Sent, code: ${event.type}`);
+      }
+    }));
   }
 }
